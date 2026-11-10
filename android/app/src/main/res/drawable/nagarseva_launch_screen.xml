@@ -1,0 +1,11 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/nagarseva_splash_navy" />
+    <item
+        android:width="176dp"
+        android:height="176dp"
+        android:gravity="center">
+        <bitmap
+            android:src="@drawable/nagarseva_mark"
+            android:gravity="fill" />
+    </item>
+</layer-list>
