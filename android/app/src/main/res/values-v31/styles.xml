@@ -1,0 +1,11 @@
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <item name="android:windowBackground">@drawable/nagarseva_launch_screen</item>
+        <item name="android:statusBarColor">#061F4E</item>
+        <item name="android:navigationBarColor">#061F4E</item>
+        <item name="android:windowSplashScreenBackground">@color/nagarseva_splash_navy</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/nagarseva_mark</item>
+        <item name="android:windowSplashScreenAnimationDuration">850</item>
+    </style>
+</resources>
