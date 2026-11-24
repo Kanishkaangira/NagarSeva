@@ -3,6 +3,7 @@ import { colors } from './Theme';
 
 export default StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.canvas },
+  safeDark: { backgroundColor: '#0B1422' },
   topStripe: {
     position: 'absolute',
     left: 0,

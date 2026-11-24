@@ -37,7 +37,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Your location is attached to a civic issue report when you tap Use my current location.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

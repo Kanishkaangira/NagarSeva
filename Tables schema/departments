@@ -1,0 +1,10 @@
+create table public.departments (
+  id serial not null,
+  code text not null,
+  name text not null,
+  is_external boolean not null default false,
+  is_active boolean not null default true,
+  created_at timestamp with time zone not null default now(),
+  constraint departments_pkey primary key (id),
+  constraint departments_code_key unique (code)
+) TABLESPACE pg_default;

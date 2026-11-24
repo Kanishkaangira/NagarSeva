@@ -1,0 +1,8 @@
+create table public.districts (
+  id serial not null,
+  name text not null,
+  is_active boolean not null default true,
+  created_at timestamp with time zone not null default now(),
+  constraint districts_pkey primary key (id),
+  constraint districts_name_key unique (name)
+) TABLESPACE pg_default;

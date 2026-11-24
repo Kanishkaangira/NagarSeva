@@ -1,0 +1,107 @@
+create type public.report_severity as enum (
+  'Low',
+  'Moderate',
+  'High',
+  'Very High',
+  'Critical'
+);
+
+create table public."GovtReport" (
+  report_id uuid not null,
+  status text not null default 'Reported'::text,
+  severity public.report_severity not null default 'Moderate'::report_severity,
+  priority_score integer null,
+  department_id integer null,
+  district_id integer null,
+  assigned_to uuid null,
+  assigned_at timestamp with time zone null,
+  authority_remarks text null,
+  resolution_note text null,
+  resolution_image_urls text[] not null default '{}'::text[],
+  citizen_verification text not null default 'Pending'::text,
+  citizen_feedback text null,
+  updated_at timestamp with time zone not null default now(),
+  resolved_at timestamp with time zone null,
+  verified_at timestamp with time zone null,
+  reporter_count integer not null default 0,
+  department_confidence numeric(5, 4) null,
+  severity_confidence numeric(5, 4) null,
+  priority_breakdown jsonb not null default '{}'::jsonb,
+  department_model_version text null,
+  severity_model_version text null,
+  priority_model_version text null,
+  priority_calculated_at timestamp with time zone null,
+  constraint "GovtReport_pkey" primary key (report_id),
+  constraint "GovtReport_assigned_to_fkey" foreign KEY (assigned_to) references admin_users (user_id) on delete set null,
+  constraint "GovtReport_department_id_fkey" foreign KEY (department_id) references departments (id),
+  constraint "GovtReport_district_id_fkey" foreign KEY (district_id) references districts (id),
+  constraint "GovtReport_report_id_fkey" foreign KEY (report_id) references "UserReport" (id) on delete CASCADE,
+  constraint "GovtReport_citizen_feedback_check" check (
+    (
+      citizen_feedback = any (array['fixed'::text, 'not_fixed'::text])
+    )
+  ),
+  constraint "GovtReport_priority_score_check" check (
+    (
+      (priority_score >= 0)
+      and (priority_score <= 100)
+    )
+  ),
+  constraint "GovtReport_citizen_verification_check" check (
+    (
+      citizen_verification = any (
+        array[
+          'Pending'::text,
+          'Confirmed'::text,
+          'Still Exists'::text
+        ]
+      )
+    )
+  ),
+  constraint "GovtReport_status_check" check (
+    (
+      status = any (
+        array[
+          'Reported'::text,
+          'Assigned'::text,
+          'In Progress'::text,
+          'Resolved'::text,
+          'Reopened'::text,
+          'Closed'::text
+        ]
+      )
+    )
+  ),
+  constraint govt_report_reporter_count_check check (reporter_count >= 0),
+  constraint govt_report_department_confidence_check check (
+    department_confidence between 0 and 1
+  ),
+  constraint govt_report_severity_confidence_check check (
+    severity_confidence between 0 and 1
+  ),
+  constraint govt_report_priority_breakdown_check check (
+    jsonb_typeof(priority_breakdown) = 'object'
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists govt_report_dept_district_idx on public."GovtReport" using btree (department_id, district_id) TABLESPACE pg_default;
+
+create index IF not exists govt_report_status_idx on public."GovtReport" using btree (status) TABLESPACE pg_default;
+
+create index IF not exists govt_report_assigned_to_idx on public."GovtReport" using btree (assigned_to) TABLESPACE pg_default;
+
+create trigger govt_report_guard_update BEFORE
+update on "GovtReport" for EACH row
+execute FUNCTION guard_govt_report_update ();
+
+create trigger govt_report_set_district BEFORE INSERT on "GovtReport" for EACH row
+execute FUNCTION set_govt_report_district ();
+
+create trigger govt_report_set_updated_at BEFORE
+update on "GovtReport" for EACH row
+execute FUNCTION set_govt_report_updated_at ();
+
+create trigger sync_govt_report_status_to_user_report
+after
+update OF status on "GovtReport" for EACH row when (old.status is distinct from new.status)
+execute FUNCTION sync_govt_report_status_to_user_report ();

@@ -1,0 +1,44 @@
+create table public.profiles (
+  id uuid not null,
+  created_at timestamp with time zone not null default now(),
+  full_name text null,
+  email text null,
+  phone_number text null,
+  profile_image text null,
+  address text null,
+  district_id integer null,
+  state text null,
+  pincode text null,
+  verification_status text not null default 'unverified'::text,
+  verification_provider text null,
+  provider_user_id text null,
+  verified_at timestamp with time zone null,
+  updated_at timestamp with time zone not null default now(),
+  constraint profiles_pkey primary key (id),
+  constraint profiles_district_id_fkey foreign KEY (district_id) references districts (id),
+  constraint profiles_id_fkey foreign KEY (id) references auth.users (id) on delete CASCADE,
+  constraint profiles_verification_provider_check check (
+    (
+      (verification_provider is null)
+      or (
+        verification_provider = any (array['digilocker'::text, 'alternative'::text])
+      )
+    )
+  ),
+  constraint profiles_verification_status_check check (
+    (
+      verification_status = any (
+        array[
+          'unverified'::text,
+          'pending'::text,
+          'verified'::text,
+          'failed'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create trigger profiles_set_updated_at BEFORE
+update on profiles for EACH row
+execute FUNCTION set_profile_updated_at (); 

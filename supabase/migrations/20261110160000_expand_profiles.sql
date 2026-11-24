@@ -12,15 +12,12 @@ alter table public.profiles
   add column if not exists provider_user_id text,
   add column if not exists verified_at timestamptz,
   add column if not exists updated_at timestamptz not null default pg_catalog.now();
-
 alter table public.profiles
   add constraint profiles_verification_status_check
   check (verification_status in ('unverified', 'pending', 'verified', 'failed'));
-
 alter table public.profiles
   add constraint profiles_verification_provider_check
   check (verification_provider is null or verification_provider in ('digilocker', 'alternative'));
-
 -- Populate profile details for users that already existed before this migration.
 update public.profiles as profile
 set email = auth_user.email,
@@ -33,7 +30,6 @@ set email = auth_user.email,
     profile_image = coalesce(profile.profile_image, auth_user.raw_user_meta_data ->> 'avatar_url')
 from auth.users as auth_user
 where auth_user.id = profile.id;
-
 create or replace function public.create_profile_for_auth_user()
 returns trigger
 language plpgsql
@@ -53,7 +49,6 @@ begin
   return new;
 end;
 $$;
-
 create or replace function public.set_profile_updated_at()
 returns trigger
 language plpgsql
@@ -64,15 +59,12 @@ begin
   return new;
 end;
 $$;
-
 drop trigger if exists profiles_set_updated_at on public.profiles;
 create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_profile_updated_at();
-
 grant update (full_name, email, phone_number, profile_image, address, city, state, pincode)
   on public.profiles to authenticated;
-
 create policy "Citizens can update their own profile"
   on public.profiles for update to authenticated
   using ((select auth.uid()) = id)
