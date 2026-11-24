@@ -1,0 +1,118 @@
+create table public."UserReport" (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  "Issue Type" text not null,
+  "Description" text not null,
+  "MoreDetail" text null,
+  image_urls text[] not null default '{}'::text[],
+  latitude double precision null,
+  longitude double precision null,
+  location_address text not null,
+  district_id integer null,
+  created_at timestamp with time zone not null default now(),
+  complaint_number text not null default (
+    'NS-'::text || upper(
+      substr(
+        replace((gen_random_uuid ())::text, '-'::text, ''::text),
+        1,
+        10
+      )
+    )
+  ),
+  status text not null default 'Reported'::text,
+  citizen_feedback text null,
+  updated_at timestamp with time zone not null default now(),
+  issue_id uuid null,
+  constraint "UserReport_pkey" primary key (id),
+  constraint "UserReport_complaint_number_key" unique (complaint_number),
+  constraint "UserReport_user_id_fkey" foreign KEY (user_id) references profiles (id) on delete CASCADE,
+  constraint "UserReport_district_id_fkey" foreign KEY (district_id) references districts (id),
+  constraint user_report_issue_id_fkey foreign KEY (issue_id) references "GovtReport" (report_id) on delete set null,
+  constraint "UserReport_citizen_feedback_check" check (
+    (
+      citizen_feedback = any (array['fixed'::text, 'not_fixed'::text])
+    )
+  ),
+  constraint user_report_status_check check (
+    (
+      status = any (
+        array[
+          'Reported'::text,
+          'Assigned'::text,
+          'In Progress'::text,
+          'Resolved'::text,
+          'Reopened'::text,
+          'Closed'::text
+        ]
+      )
+    )
+  ),
+  constraint "UserReport_latitude_check" check (
+    (
+      (latitude >= ('-90'::integer)::double precision)
+      and (latitude <= (90)::double precision)
+    )
+  ),
+  constraint "UserReport_longitude_check" check (
+    (
+      (longitude >= ('-180'::integer)::double precision)
+      and (longitude <= (180)::double precision)
+    )
+  ),
+  constraint "UserReport_title_check" check (
+    (
+      (
+        char_length(
+          TRIM(
+            both
+            from
+              "Issue Type"
+          )
+        ) >= 1
+      )
+      and (
+        char_length(
+          TRIM(
+            both
+            from
+              "Issue Type"
+          )
+        ) <= 100
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists user_report_user_created_at_idx on public."UserReport" using btree (user_id, created_at desc) TABLESPACE pg_default;
+
+create index IF not exists user_report_district_idx on public."UserReport" using btree (district_id) TABLESPACE pg_default;
+
+create index IF not exists user_report_issue_id_idx on public."UserReport" using btree (issue_id) TABLESPACE pg_default;
+
+create trigger create_govt_report_after_user_report_insert
+after INSERT on "UserReport" for EACH row
+execute FUNCTION create_govt_report_for_user_report ();
+
+create trigger user_report_maintain_issue_reporter_count
+after INSERT
+or DELETE
+or
+update OF issue_id,
+user_id on "UserReport" for EACH row
+execute FUNCTION maintain_govt_report_reporter_count ();
+
+create trigger sync_user_report_district
+after
+update OF district_id on "UserReport" for EACH row when (old.district_id is distinct from new.district_id)
+execute FUNCTION sync_user_report_district_to_govt ();
+
+create trigger sync_user_report_feedback_to_govt_report
+after
+update OF citizen_feedback on "UserReport" for EACH row when (
+  old.citizen_feedback is distinct from new.citizen_feedback
+)
+execute FUNCTION sync_citizen_feedback_to_govt_report ();
+
+create trigger user_report_set_updated_at BEFORE
+update on "UserReport" for EACH row
+execute FUNCTION set_user_report_updated_at ();

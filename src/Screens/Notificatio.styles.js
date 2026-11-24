@@ -45,4 +45,8 @@ export default StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
+  darkCard: { backgroundColor: '#152338', borderColor: '#293B52' },
+  darkText: { color: '#EAF2FF' },
+  darkMuted: { color: '#AABBD2' },
+  darkNotice: { backgroundColor: '#1B2A40' },
 });

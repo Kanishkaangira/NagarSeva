@@ -41,6 +41,20 @@ export default StyleSheet.create({
     marginTop: 8,
   },
   locationText: { color: colors.muted, fontSize: 9, flex: 1 },
+  resolutionPhotos: { marginTop: 9 },
+  resolutionPhotosTitle: {
+    color: colors.ink,
+    fontSize: 9,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  resolutionPhotosRow: { flexDirection: 'row', gap: 7, paddingRight: 2 },
+  resolutionPhoto: {
+    width: 92,
+    height: 68,
+    borderRadius: 10,
+    backgroundColor: '#EAF2FF',
+  },
   timeline: { flexDirection: 'row', marginTop: 10, paddingHorizontal: 2 },
   timelineStep: { flex: 1 },
   timelineLineArea: { height: 12, justifyContent: 'center' },
@@ -114,4 +128,7 @@ export default StyleSheet.create({
     padding: 8,
   },
   reviewRequestedText: { color: colors.navy, fontSize: 9, fontWeight: '700', flex: 1 },
+  darkCard: { backgroundColor: '#152338', borderColor: '#293B52' },
+  darkText: { color: '#EAF2FF' },
+  darkMuted: { color: '#AABBD2' },
 });

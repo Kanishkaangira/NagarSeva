@@ -145,4 +145,10 @@ export default StyleSheet.create({
     elevation: 3,
   },
   outlineButtonText: { color: colors.white, fontSize: 11, fontWeight: '800' },
+  darkSurface: { backgroundColor: '#152338', borderColor: '#293B52' },
+  darkText: { color: '#EAF2FF' },
+  darkMuted: { color: '#AABBD2' },
+  darkFilterBar: { backgroundColor: '#1A2A40' },
+  darkFilterButton: { backgroundColor: 'transparent' },
+  darkFilterButtonActive: { backgroundColor: '#2A405D' },
 });

@@ -1,0 +1,51 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.19.1
+2 info using node@v24.22.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva\.npmrc
+5 silly config load:file:C:\Users\dell\.npmrc
+6 silly config load:file:C:\Users\dell\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install exifreader
+8 verbose argv "install" "exifreader" "--no-audit" "--no-fund" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva\.npm-cache\_logs\2026-11-24T19_52_00_481Z-
+10 verbose logfile C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva\.npm-cache\_logs\2026-11-24T19_52_00_481Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest exifreader@*
+15 silly packumentCache full:https://registry.npmjs.org/exifreader cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/npm 1413ms
+17 http fetch GET 200 https://registry.npmjs.org/exifreader 958ms (cache miss)
+18 silly packumentCache full:https://registry.npmjs.org/exifreader set size:undefined disposed:false
+19 silly placeDep ROOT exifreader@4.55.1 OK for: NagarSeva@0.0.1 want: *
+20 silly fetch manifest @xmldom/xmldom@^0.9.12
+21 silly packumentCache full:https://registry.npmjs.org/@xmldom%2fxmldom cache-miss
+22 http fetch GET 200 https://registry.npmjs.org/@xmldom%2fxmldom 433ms (cache miss)
+23 silly packumentCache full:https://registry.npmjs.org/@xmldom%2fxmldom set size:undefined disposed:false
+24 silly placeDep ROOT @xmldom/xmldom@0.9.12 OK for: exifreader@4.55.1 want: ^0.9.12
+25 silly reify moves {}
+26 http cache @xmldom/xmldom@https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.12.tgz 1ms (cache hit)
+27 http cache exifreader@https://registry.npmjs.org/exifreader/-/exifreader-4.55.1.tgz 0ms (cache hit)
+28 silly tarball no local data for @xmldom/xmldom@https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.12.tgz. Extracting by manifest.
+29 silly tarball no local data for exifreader@https://registry.npmjs.org/exifreader/-/exifreader-4.55.1.tgz. Extracting by manifest.
+30 http fetch GET 200 https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.9.12.tgz 463ms (cache miss)
+31 http fetch GET 200 https://registry.npmjs.org/exifreader/-/exifreader-4.55.1.tgz 1508ms (cache miss)
+32 info run exifreader@4.55.1 postinstall node_modules/exifreader node bin/build.js --only-with-config
+33 info run exifreader@4.55.1 postinstall { code: 0, signal: null }
+34 silly ADD node_modules/@xmldom/xmldom
+35 silly ADD node_modules/exifreader
+36 warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+36 warn install-scripts   exifreader@4.55.1 (postinstall: node bin/build.js --only-with-config)
+36 warn install-scripts
+36 warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+37 verbose cwd C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva
+38 verbose os Windows_NT 10.0.26300
+39 verbose node v24.22.0
+40 verbose npm  v11.19.1
+41 notice
+41 notice New major version of npm available! 11.19.1 -> 12.2.3
+41 notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+41 notice To update run: npm install -g npm@12.2.3
+41 notice  { force: true, Symbol(proc-log.meta): true }
+42 verbose exit 0
+43 info ok

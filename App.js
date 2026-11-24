@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, StatusBar, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -10,6 +11,7 @@ import StackNavigation from './src/Navigation/StackNavigation';
 import Flash from './src/Screens/Flash';
 import StartupSplash from './src/Screens/StartupSplash';
 import { colors } from './src/Theme';
+import { t } from './src/lib/i18n';
 import {
   createComplaint,
   ensureCitizenSession,
@@ -28,9 +30,17 @@ function getServiceError(error) {
         'This project needs anonymous citizen sessions enabled before it can save a report.',
     };
   }
+  const detail = [
+    error?.message,
+    error?.details,
+    error?.hint,
+    error?.code ? `Error code: ${error.code}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
   return {
     message: 'Could not connect to city services',
-    detail: error?.message || 'Check your connection and try again.',
+    detail: detail || 'Check your connection and try again.',
   };
 }
 
@@ -42,11 +52,36 @@ function AppContent() {
   const [verified, setVerified] = useState([]);
   const [filter, setFilter] = useState('All');
   const [category, setCategory] = useState('');
+  const [districtId, setDistrictId] = useState(null);
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
+  const [place, setPlace] = useState('');
+  const [coordinates, setCoordinates] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState('English');
   const submitLock = useRef(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem('nagar-seva-dark-mode')
+      .then(value => setDarkMode(value === 'true'))
+      .catch(() => {});
+    AsyncStorage.getItem('nagar-seva-language')
+      .then(value => {
+        if (value === 'English' || value === 'Hindi') setLanguage(value);
+      })
+      .catch(() => {});
+  }, []);
+
+  const updateDarkMode = enabled => {
+    setDarkMode(enabled);
+    AsyncStorage.setItem('nagar-seva-dark-mode', String(enabled)).catch(() => {});
+  };
+  const updateLanguage = selectedLanguage => {
+    setLanguage(selectedLanguage);
+    AsyncStorage.setItem('nagar-seva-language', selectedLanguage).catch(() => {});
+  };
   const [flash, setFlash] = useState(null);
   const [showStartupSplash, setShowStartupSplash] = useState(true);
 
@@ -59,7 +94,7 @@ function AppContent() {
     if (!flash) {
       return undefined;
     }
-    const timer = setTimeout(() => setFlash(null), 2600);
+    const timer = setTimeout(() => setFlash(null), 4200);
     return () => clearTimeout(timer);
   }, [flash]);
 
@@ -119,13 +154,16 @@ function AppContent() {
   }, []);
 
   if (showStartupSplash) {
-    return <StartupSplash />;
+    return <StartupSplash language={language} />;
   }
 
   const openReport = (selectedCategory = '') => {
     setPreviousScreen(screen);
     setTitle('');
     setDetails('');
+    setPlace('');
+    setDistrictId(null);
+    setCoordinates(null);
     setPhoto(null);
     setCategory(selectedCategory);
     setScreen('Report');
@@ -134,18 +172,58 @@ function AppContent() {
   const submitReport = async () => {
     if (submitLock.current) return;
 
+    if (
+      !photo?.uri ||
+      !Number.isFinite(photo?.gps?.latitude) ||
+      !Number.isFinite(photo?.gps?.longitude)
+    ) {
+      Alert.alert(
+        t(language, 'Add a GPS photo'),
+        t(language, 'Choose a photo with verifiable GPS location before submitting your report.'),
+      );
+      return;
+    }
+
     if (!category) {
       Alert.alert(
-        'Select an issue type',
-        'Choose the category that best matches the problem.',
+        t(language, 'Select an issue type'),
+        t(language, 'Choose the category that best matches the problem.'),
       );
       return;
     }
 
     if (!title.trim()) {
       Alert.alert(
-        'Add a short title',
-        'Tell us what needs attention before submitting.',
+        t(language, 'Add a short title'),
+        t(language, 'Tell us what needs attention before submitting.'),
+      );
+      return;
+    }
+
+    if (
+      !coordinates ||
+      !Number.isFinite(coordinates.latitude) ||
+      !Number.isFinite(coordinates.longitude)
+    ) {
+      Alert.alert(
+        t(language, 'Add your current location'),
+        t(language, 'Use the location button in step 4 before submitting your report.'),
+      );
+      return;
+    }
+
+    if (!districtId) {
+      Alert.alert(
+        t(language, 'Select your district'),
+        t(language, 'Choose the district where the problem is located.'),
+      );
+      return;
+    }
+
+    if (!place.trim()) {
+      Alert.alert(
+        t(language, 'Add the issue location'),
+        t(language, 'Enter a street, sector, village, or nearby landmark.'),
       );
       return;
     }
@@ -157,25 +235,27 @@ function AppContent() {
         category,
         title,
         details,
-        place: 'Sector 15, New Delhi',
-          photo,
+        place: place.trim(),
+        districtId,
+        latitude: coordinates?.latitude ?? null,
+        longitude: coordinates?.longitude ?? null,
+        photo,
       });
       setIssues(current => [report, ...current]);
       setFilter('All');
-      setScreen('My reports');
+      setScreen('Home');
       setFlash({
-        message: 'Report submitted',
-        detail: `Your report ID is ${report.id}. Track it in My reports.`,
+        message: t(language, 'Report submitted successfully'),
+        detail: `${t(language, 'Your report ID is')} ${report.id}. ${t(language, 'Track it in My reports.')}.`,
       });
     } catch (error) {
       const serviceError = getServiceError(error);
-      setFlash({
-        message:
-          serviceError.message === 'Could not connect to city services'
-            ? 'Report could not be submitted'
-            : serviceError.message,
-        detail: serviceError.detail,
-      });
+      Alert.alert(
+        serviceError.message === 'Could not connect to city services'
+          ? t(language, 'Report could not be submitted')
+          : t(language, serviceError.message),
+        t(language, serviceError.detail),
+      );
     } finally {
       submitLock.current = false;
       setIsSubmitting(false);
@@ -197,8 +277,8 @@ function AppContent() {
       );
     } catch (error) {
       setFlash({
-        message: 'Feedback could not be saved',
-        detail: error.message || 'Check your connection and try again.',
+        message: t(language, 'Feedback could not be saved'),
+        detail: t(language, error.message || 'Check your connection and try again.'),
       });
     }
   };
@@ -215,19 +295,22 @@ function AppContent() {
         ),
       );
       setFlash({
-        message: 'Review requested',
-        detail: 'The city team has been asked to check this issue again.',
+        message: t(language, 'Review requested'),
+        detail: t(language, 'The city team has been asked to check this issue again.'),
       });
     } catch (error) {
       setFlash({
-        message: 'Feedback could not be saved',
-        detail: error.message || 'Check your connection and try again.',
+        message: t(language, 'Feedback could not be saved'),
+        detail: t(language, error.message || 'Check your connection and try again.'),
       });
     }
   };
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.safe}>
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.safe, darkMode && styles.safeDark]}
+    >
       <StatusBar
         backgroundColor={colors.navy}
         barStyle="light-content"
@@ -249,6 +332,10 @@ function AppContent() {
       </View>
       <StackNavigation
         screen={screen}
+        darkMode={darkMode}
+        onDarkModeChange={updateDarkMode}
+        language={language}
+        onLanguageChange={updateLanguage}
         onBackReport={() => setScreen(previousScreen)}
         issues={issues}
         filter={filter}
@@ -258,6 +345,12 @@ function AppContent() {
         onReopen={requestReview}
         category={category}
         onCategoryChange={setCategory}
+        districtId={districtId}
+        onDistrictChange={setDistrictId}
+        place={place}
+        onPlaceChange={setPlace}
+        coordinates={coordinates}
+        onCoordinatesChange={setCoordinates}
         title={title}
         onTitleChange={setTitle}
         details={details}
@@ -280,6 +373,8 @@ function AppContent() {
       {screen !== 'Report' ? (
         <HomeBottomNav
           activeScreen={screen}
+          darkMode={darkMode}
+          language={language}
           bottomOffset={Math.max(insets.bottom, 12) + 14}
           onNavigate={nextScreen => {
             setFlash(null);

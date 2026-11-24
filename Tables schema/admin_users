@@ -1,0 +1,41 @@
+create type public.admin_role as enum (
+  'superadmin',
+  'stateadmin',
+  'districtadmin'
+);
+
+create table public.admin_users (
+  user_id uuid not null,
+  email text not null,
+  role public.admin_role not null,
+  department_id integer null,
+  district_id integer null,
+  is_active boolean not null default true,
+  created_at timestamp with time zone not null default now(),
+  constraint admin_users_pkey primary key (user_id),
+  constraint admin_users_department_id_fkey foreign KEY (department_id) references departments (id),
+  constraint admin_users_district_id_fkey foreign KEY (district_id) references districts (id),
+  constraint admin_users_user_id_fkey foreign KEY (user_id) references auth.users (id) on delete CASCADE,
+  constraint admin_scope_check check (
+    (role = 'superadmin' and department_id is null and district_id is null)
+    or (role = 'stateadmin' and department_id is not null and district_id is null)
+    or (role = 'districtadmin' and department_id is not null and district_id is not null)
+  ),
+  constraint admin_email_format_check check ((email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'::text))
+) TABLESPACE pg_default;
+
+create unique INDEX IF not exists admin_users_email_unique on public.admin_users using btree (lower(email)) TABLESPACE pg_default;
+
+create unique INDEX IF not exists one_district_officer_per_dept on public.admin_users using btree (department_id, district_id) TABLESPACE pg_default
+where
+  (
+    (role = 'districtadmin')
+    and is_active
+  );
+
+create unique INDEX IF not exists one_authority_admin_per_dept on public.admin_users using btree (department_id) TABLESPACE pg_default
+where
+  (
+    (role = 'stateadmin')
+    and is_active
+  );

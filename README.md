@@ -24,8 +24,9 @@ The screenshots below are the supplied NagarSeva screen previews and are stored 
 
 - **Home dashboard:** quick report entry, municipal service categories, report counts, and city notices.
 - **Issue reporting:** choose a category, enter a short issue title and details, and select a photo from the device gallery.
-- **Photo storage:** selected images upload to the private Supabase Storage bucket `report`, under `UserReport/<citizen-user-id>/`. The saved object path is recorded in `UserReport.image_urls`.
+- **Photo storage:** citizen evidence photos upload to the private `user-reports` bucket. Government resolution photos use the separate private `govt-resolution` bucket and are shown on the citizen's report card.
 - **Issue tracking:** citizens can view their reports and follow status changes. Feedback about a resolution is recorded for the authority workflow.
+- **Report location:** citizens must capture their foreground GPS coordinates, select an active district, and enter a street or landmark before submitting a report.
 - **Citizen profile data:** profiles are linked to Supabase Auth users and include contact, address, and identity-verification fields.
 - **Branded launch experience:** a NagarSeva logo and launch screen are configured for Android and iOS, followed by an animated in-app splash.
 
@@ -35,6 +36,7 @@ The screenshots below are the supplied NagarSeva screen previews and are stored 
 - React 19
 - Supabase Auth, Postgres, Realtime, and Storage
 - `react-native-image-picker` for gallery selection
+- `react-native-geolocation-service` for one-time foreground GPS capture
 - `react-native-config` for local environment variables
 - `react-native-safe-area-context`, `react-native-svg`, and Lucide icons
 
@@ -96,7 +98,7 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push --linked
 ```
 
-The migrations create the report/profile tables, RLS policies, status and feedback triggers, and the private report-image bucket. Review `supabase/config.toml` and the CLI config diff before pushing configuration changes. The migrations are in `supabase/migrations/`.
+The migrations create the report/profile tables, RLS policies, status and feedback triggers, and separate private buckets for citizen evidence and government resolution photos. Review `supabase/config.toml` and the CLI config diff before pushing configuration changes. The migrations are in `supabase/migrations/`.
 
 ### 4. Start the app
 
@@ -142,30 +144,31 @@ Stores the citizen-submitted report:
 | `Description` | Selected issue category |
 | `MoreDetail` | Optional longer description |
 | `image_urls` | Storage object paths for uploaded report photos |
-| `latitude`, `longitude` | Optional coordinates; not currently collected by the form |
-| `location_address` | Report location; currently uses the form's default location |
+| `district_id` | Selected district ID from `districts` |
+| `latitude`, `longitude` | GPS coordinates captured after the citizen taps the required location button |
+| `location_address` | Street, sector, village, or landmark entered by the citizen |
+| `district_id` | Selected district ID from `districts` |
 | `complaint_number`, `status`, `citizen_feedback`, timestamps | Tracking and feedback fields used by the app |
 
 The display-style column names with spaces and mixed capitalization are intentional and match the requested schema.
 
 ### `GovtReport`
 
-One authority-side row per `UserReport`, created by a database trigger. Stores status, severity, priority score, department, assigned official ID, authority remarks, resolution notes/photos, citizen verification, feedback, and timestamps. It has row-level security enabled and is available to trusted server-side code using the service role. **Never expose the service-role key in a mobile app or public web client.**
+One authority-side row per `UserReport`, created by a database trigger. Stores status, severity, priority score, department, assigned official ID, authority remarks, resolution notes/photos, citizen verification, feedback, and timestamps. Row-level security limits staff access to their assigned scope; citizens can view their own resolution photos. **Never expose the service-role key in a mobile app or public web client.**
 
 ### Report photo storage
 
-- Bucket: `report` (private)
-- Object path: `UserReport/<citizen-user-id>/<filename>`
-- Accepted types: JPEG, PNG, and WebP
-- Per-file limit: 5 MB
-- Authenticated citizens can access only files under their own user-ID folder.
+- Citizen uploads: `user-reports` (private), path `UserReport/<citizen-user-id>/<filename>`, JPEG/PNG/WebP, 5 MB limit. Citizens can access their own photos; scoped government admins can view photos attached to reports in their jurisdiction.
+- Government resolution uploads: `govt-resolution` (private), path `GovtReport/<report-uuid>/<filename>`, JPEG/PNG/WebP, 10 MB limit. Scoped admins can upload and manage these photos; the report owner can list and view them through short-lived signed URLs.
+- The former `report` bucket is retained as legacy storage. New app uploads use `user-reports`; existing objects are not moved or deleted by the migration.
+- The authority portal is not in this mobile repo yet. Its uploader should save each uploaded object path in `GovtReport.resolution_image_urls`.
 
 ## Security and demo notes
 
 - The mobile app uses only the Supabase URL and publishable key; row-level security protects citizen data.
 - Anonymous sessions are **not** proof of a verified identity. The profile schema supports identity-verification status, but a provider integration is not implemented.
 - The linked Supabase project's anonymous sign-in setting is currently disabled. Enable it before demonstrating report submission and photo upload.
-- The current form uses a default location and does not collect latitude/longitude.
+- The report form requires GPS coordinates, a selected district, and a citizen-entered street, sector, village, or landmark. GPS is captured only after tapping the location button; the app does not track location in the background or reverse-geocode coordinates into an address.
 - The Profile screen and municipal notice use sample display content; profile editing and a live notice feed are not connected yet.
 - The authority dashboard/API is a separate deliverable. Authority mutations must run server-side with controlled staff authentication.
 - `.env` is local-only and must be configured separately on each machine.

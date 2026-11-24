@@ -21,17 +21,20 @@ export const colors = {
 
 export const categories = [
   { name: 'Roads', icon: 'roads' },
-  { name: 'Sanitation', icon: 'sanitation' },
-  { name: 'Electricity', icon: 'electricity' },
-  { name: 'Water', icon: 'water' },
+  { name: 'Bridges', icon: 'bridge' },
+  { name: 'Flyovers', icon: 'construction' },
+  { name: 'Government buildings', icon: 'building' },
+  { name: 'Streetlights', icon: 'streetlight' },
+  { name: 'Drainage', icon: 'drainage' },
+  { name: 'Sanitation', icon: 'trash' },
+  { name: 'Water supply', icon: 'waterSupply' },
+  { name: 'Sewerage', icon: 'sewerage' },
+  { name: 'Electric poles and wires', icon: 'utilityPole' },
 ];
 
-export const issueCategories = [
-  ...categories,
-  { name: 'Drainage', icon: 'waves' },
-  { name: 'Parks', icon: 'trees' },
-  { name: 'Other', icon: 'help' },
-];
+// Citizen-facing options describe the reported problem. Department routing
+// is handled separately using the issue type and report location.
+export const issueCategories = categories;
 
 export const initialIssues = [
   {

@@ -1,0 +1,46 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.19.1
+2 info using node@v24.22.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva\.npmrc
+5 silly config load:file:C:\Users\dell\.npmrc
+6 silly config load:file:C:\Users\dell\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install @react-native-ml-kit/text-recognition
+8 verbose argv "install" "@react-native-ml-kit/text-recognition" "--no-audit" "--no-fund" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva\.npm-cache\_logs\2026-11-24T20_25_00_052Z-
+10 verbose logfile C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva\.npm-cache\_logs\2026-11-24T20_25_00_052Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest @react-native-ml-kit/text-recognition@*
+15 silly packumentCache full:https://registry.npmjs.org/@react-native-ml-kit%2ftext-recognition cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/@react-native-ml-kit%2ftext-recognition 2263ms (cache miss)
+17 silly packumentCache full:https://registry.npmjs.org/@react-native-ml-kit%2ftext-recognition set size:undefined disposed:false
+18 silly fetch manifest react@19.3.0
+19 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+20 http fetch GET 200 https://registry.npmjs.org/react 1323ms (cache miss)
+21 silly packumentCache full:https://registry.npmjs.org/react set size:undefined disposed:false
+22 silly fetch manifest react-native@0.88.1
+23 silly packumentCache full:https://registry.npmjs.org/react-native cache-miss
+24 http fetch GET 200 https://registry.npmjs.org/react-native 966ms (cache miss)
+25 silly packumentCache full:https://registry.npmjs.org/react-native set size:undefined disposed:false
+26 silly fetch manifest @types/react@^19.2.0
+27 silly packumentCache full:https://registry.npmjs.org/@types%2freact cache-miss
+28 http fetch GET 200 https://registry.npmjs.org/@types%2freact 373ms (cache miss)
+29 silly packumentCache full:https://registry.npmjs.org/@types%2freact set size:undefined disposed:false
+30 silly placeDep ROOT @react-native-ml-kit/text-recognition@2.0.0 OK for: NagarSeva@0.0.1 want: *
+31 silly reify moves {}
+32 http cache @react-native-ml-kit/text-recognition@https://registry.npmjs.org/@react-native-ml-kit/text-recognition/-/text-recognition-2.0.0.tgz 0ms (cache hit)
+33 silly tarball no local data for @react-native-ml-kit/text-recognition@https://registry.npmjs.org/@react-native-ml-kit/text-recognition/-/text-recognition-2.0.0.tgz. Extracting by manifest.
+34 http fetch GET 200 https://registry.npmjs.org/@react-native-ml-kit/text-recognition/-/text-recognition-2.0.0.tgz 689ms (cache miss)
+35 silly ADD node_modules/@react-native-ml-kit/text-recognition
+36 warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+36 warn install-scripts   exifreader@4.55.1 (postinstall: node bin/build.js --only-with-config)
+36 warn install-scripts
+36 warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+37 verbose cwd C:\Users\dell\OneDrive\Documents\Desktop\NagarSeva
+38 verbose os Windows_NT 10.0.26300
+39 verbose node v24.22.0
+40 verbose npm  v11.19.1
+41 verbose exit 0
+42 info ok

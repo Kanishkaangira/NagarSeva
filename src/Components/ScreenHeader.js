@@ -3,12 +3,14 @@ import { Text, View } from 'react-native';
 import Icon from './Icon';
 import ScaleButton from './ScaleButton';
 import styles from './ScreenHeader.styles';
+import { t } from '../lib/i18n';
 
 export default function ScreenHeader({
   greeting,
   title,
   subtitle,
   showCitizenTag,
+  language = 'English',
   onNotifications,
   onProfile,
 }) {
@@ -33,11 +35,11 @@ export default function ScreenHeader({
         </View>
         <View style={styles.brandCopy}>
           <Text style={styles.brandName}>NagarSeva</Text>
-          <Text style={styles.brandSubtitle}>Municipal Corporation</Text>
+          <Text style={styles.brandSubtitle}>{t(language, 'Municipal Corporation')}</Text>
         </View>
         <ScaleButton
           style={styles.notificationButton}
-          accessibilityLabel="Notifications"
+          accessibilityLabel={t(language, 'Notifications')}
           onPress={onNotifications}
         >
           <Icon name="bell" color="#FFFFFF" size={17} />
@@ -45,7 +47,7 @@ export default function ScreenHeader({
         </ScaleButton>
         <ScaleButton
           style={styles.avatar}
-          accessibilityLabel="Open profile"
+          accessibilityLabel={t(language, 'Open profile')}
           onPress={onProfile}
         >
           <Text style={styles.avatarText}>A</Text>
@@ -60,7 +62,7 @@ export default function ScreenHeader({
       {showCitizenTag ? (
         <View style={styles.citizenTag}>
           <Icon name="shield" color="#FFFFFF" size={11} />
-          <Text style={styles.citizenText}>Verified citizen · Sector 15</Text>
+          <Text style={styles.citizenText}>{t(language, 'Verified citizen · Sector 15')}</Text>
         </View>
       ) : null}
     </View>

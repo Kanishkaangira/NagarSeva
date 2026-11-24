@@ -3,8 +3,9 @@ import { Animated, StatusBar, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BrandMark from '../Components/BrandMark';
 import styles from './StartupSplash.styles';
+import { t } from '../lib/i18n';
 
-export default function StartupSplash() {
+export default function StartupSplash({ language = 'English' }) {
   const entrance = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -47,15 +48,15 @@ export default function StartupSplash() {
           <BrandMark size={156} />
         </View>
         <Text style={styles.name}>NagarSeva</Text>
-        <Text style={styles.subtitle}>MUNICIPAL CORPORATION</Text>
+        <Text style={styles.subtitle}>{t(language, 'MUNICIPAL CORPORATION')}</Text>
         <View style={styles.flagLine}>
           <View style={styles.saffron} />
           <View style={styles.white} />
           <View style={styles.green} />
         </View>
-        <Text style={styles.tagline}>Your city. Your voice. Better together.</Text>
+        <Text style={styles.tagline}>{t(language, 'Your city. Your voice. Better together.')}</Text>
       </Animated.View>
-      <Text style={styles.footer}>CITIZEN SERVICES</Text>
+      <Text style={styles.footer}>{t(language, 'CITIZEN SERVICES')}</Text>
     </SafeAreaView>
   );
 }

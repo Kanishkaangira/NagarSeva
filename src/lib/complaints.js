@@ -4,7 +4,8 @@ import { decode } from 'base64-arraybuffer';
 // Select all fields because the citizen-facing schema intentionally uses the
 // exact display column names "Issue Type", "Description", and "MoreDetail".
 const complaintColumns = '*';
-const reportImageBucket = 'report';
+const reportImageBucket = 'user-reports';
+const resolutionImageBucket = 'govt-resolution';
 let pendingAnonymousSignIn;
 
 export async function ensureCitizenSession() {
@@ -34,10 +35,63 @@ export async function loadMyComplaints() {
     .select(complaintColumns)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []).map(toIssue);
+
+  return Promise.all(
+    (data ?? []).map(async row => ({
+      ...toIssue(row),
+      resolutionImages: await loadResolutionImages(row.issue_id ?? row.id),
+    })),
+  );
 }
 
-export async function createComplaint({ category, title, details, place, photo }) {
+async function loadResolutionImages(reportId) {
+  try {
+    const folder = `GovtReport/${reportId}`;
+    const { data: files, error } = await supabase.storage
+      .from(resolutionImageBucket)
+      .list(folder, { limit: 50, sortBy: { column: 'name', order: 'asc' } });
+
+    if (error) return [];
+
+    const paths = (files ?? [])
+      .filter(file => file.id && file.name)
+      .map(file => `${folder}/${file.name}`);
+
+    const signedResults = await Promise.all(
+      paths.map(path =>
+        supabase.storage.from(resolutionImageBucket).createSignedUrl(path, 3600),
+      ),
+    );
+
+    return signedResults
+      .filter(result => !result.error && result.data?.signedUrl)
+      .map(result => result.data.signedUrl);
+  } catch {
+    return [];
+  }
+}
+
+export async function loadActiveDistricts() {
+  const { data, error } = await supabase
+    .from('districts')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function createComplaint({
+  category,
+  title,
+  details,
+  place,
+  districtId,
+  latitude,
+  longitude,
+  photo,
+}) {
   const user = await ensureCitizenSession();
   let uploadedPhotoPath;
 
@@ -75,9 +129,10 @@ export async function createComplaint({ category, title, details, place, photo }
         Description: category,
         MoreDetail: details.trim() || null,
         image_urls: uploadedPhotoPath ? [uploadedPhotoPath] : [],
-        latitude: null,
-        longitude: null,
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
         location_address: place,
+        district_id: districtId,
       })
       .select(complaintColumns)
       .single();
@@ -116,7 +171,13 @@ export function subscribeToMyComplaints(userId, onChange) {
           onChange({ type: 'DELETE', complaintNumber: payload.old.complaint_number });
           return;
         }
-        onChange({ type: payload.eventType, issue: toIssue(payload.new) });
+        const issue = toIssue(payload.new);
+        loadResolutionImages(issue.issueId).then(resolutionImages => {
+          onChange({
+            type: payload.eventType,
+            issue: { ...issue, resolutionImages },
+          });
+        });
       },
     )
     .subscribe();
@@ -143,9 +204,13 @@ function toIssue(row) {
   return {
     id: row.complaint_number,
     databaseId: row.id,
+    issueId: row.issue_id ?? row.id,
     title: row['Issue Type'],
     category: row.Description,
+    districtId: row.district_id,
     place: row.location_address,
+    latitude: row.latitude,
+    longitude: row.longitude,
     status: row.status,
     date: `${dayLabel}, ${createdAt.toLocaleTimeString('en-IN', dateOptions)}`,
     createdAt: row.created_at,

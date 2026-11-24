@@ -3,6 +3,7 @@ import { colors } from '../Theme';
 
 export default StyleSheet.create({
   container: { flex: 1 },
+  containerDark: { backgroundColor: '#0B1422' },
   homePinned: {
     position: 'absolute',
     left: 0,
@@ -30,7 +31,23 @@ export default StyleSheet.create({
     borderColor: '#DCE7F5',
     overflow: 'hidden',
   },
+  scrollViewDark: { backgroundColor: '#0B1422' },
+  reportsScrollDark: {
+    backgroundColor: '#101D2E',
+    borderColor: '#293B52',
+  },
   reportsBody: { paddingTop: 12 },
+  reportScroll: {
+    backgroundColor: colors.canvas,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: '#DCE7F5',
+    overflow: 'hidden',
+  },
+  reportScrollDark: { backgroundColor: '#101D2E', borderColor: '#293B52' },
   homeBody: { paddingTop: 0 },
   reportHeader: {
     position: 'absolute',
@@ -41,7 +58,7 @@ export default StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 24,
   },
-  reportBody: { paddingTop: 8 },
+  reportBody: { paddingTop: 14 },
   scrollView: { position: 'absolute', top: 130, bottom: 0, left: 0, right: 0 },
   body: { paddingHorizontal: 18, paddingTop: 23 },
   pageTitle: {

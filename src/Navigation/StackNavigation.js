@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, ScrollView, View } from 'react-native';
-import Home, { HomeQuickCard } from '../Screens/Home';
+import Home, { HomeQuickCard, HomeSummary } from '../Screens/Home';
 import Myreports, { MyreportsHeader } from '../Screens/Myreports';
 import Notifications from '../Screens/Notificatio';
 import Profile from '../Screens/Profile';
@@ -8,9 +8,14 @@ import Report, { ReportHeader } from '../Screens/Report';
 import ScreenHeader from '../Components/ScreenHeader';
 import ReportCityBackdrop from '../Components/ReportCityBackdrop';
 import styles from './StackNavigation.styles';
+import { t } from '../lib/i18n';
 
 export default function StackNavigation({
   screen,
+  darkMode = false,
+  onDarkModeChange,
+  language = 'English',
+  onLanguageChange,
   issues,
   filter,
   onFilterChange,
@@ -19,6 +24,12 @@ export default function StackNavigation({
   onReopen,
   category,
   onCategoryChange,
+  districtId,
+  onDistrictChange,
+  place,
+  onPlaceChange,
+  coordinates,
+  onCoordinatesChange,
   title,
   onTitleChange,
   details,
@@ -47,7 +58,7 @@ export default function StackNavigation({
     }).start();
   }, [animation, screen]);
 
-  const titleCopy = {
+  const baseTitleCopy = {
     Home: {
       greeting: 'NAMASTE,',
       title: 'Ananya Sharma',
@@ -64,7 +75,7 @@ export default function StackNavigation({
       subtitle: 'Manage your citizen details.',
     },
     Report: {
-      greeting: 'LET’S MAKE A DIFFERENCE',
+      greeting: 'MAKE A DIFFERENCE',
       title: 'Report an issue',
       subtitle: 'A few details help the right team respond.',
     },
@@ -74,6 +85,9 @@ export default function StackNavigation({
       subtitle: 'Updates from your city team.',
     },
   }[screen];
+  const titleCopy = Object.fromEntries(
+    Object.entries(baseTitleCopy).map(([key, value]) => [key, t(language, value)]),
+  );
 
   let content;
   if (screen === 'Home') {
@@ -85,13 +99,23 @@ export default function StackNavigation({
         onReopen={onReopen}
         onOpenReport={onOpenReport}
         onViewReports={() => onNavigate('My reports')}
+        darkMode={darkMode}
+        language={language}
       />
     );
   } else if (screen === 'Report') {
     content = (
       <Report
+        darkMode={darkMode}
+        language={language}
         category={category}
         onCategoryChange={onCategoryChange}
+        districtId={districtId}
+        onDistrictChange={onDistrictChange}
+        place={place}
+        onPlaceChange={onPlaceChange}
+        coordinates={coordinates}
+        onCoordinatesChange={onCoordinatesChange}
         title={title}
         onTitleChange={onTitleChange}
         details={details}
@@ -107,6 +131,8 @@ export default function StackNavigation({
       <Myreports
         issues={issues}
         filter={filter}
+        darkMode={darkMode}
+        language={language}
         onFilterChange={onFilterChange}
         verified={verified}
         onVerify={onVerify}
@@ -115,13 +141,21 @@ export default function StackNavigation({
       />
     );
   } else if (screen === 'Profile') {
-    content = <Profile issues={issues} />;
+    content = (
+      <Profile
+        issues={issues}
+        darkMode={darkMode}
+        onDarkModeChange={onDarkModeChange}
+        language={language}
+        onLanguageChange={onLanguageChange}
+      />
+    );
   } else {
-    content = <Notifications issues={issues} />;
+    content = <Notifications issues={issues} darkMode={darkMode} language={language} />;
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, darkMode && styles.containerDark]}>
       {screen === 'Report' ? <ReportCityBackdrop /> : null}
       {screen === 'My reports' ? (
         <View
@@ -138,6 +172,8 @@ export default function StackNavigation({
               issues={issues}
               filter={filter}
               onFilterChange={onFilterChange}
+              darkMode={darkMode}
+              language={language}
             />
           </View>
         </View>
@@ -152,13 +188,14 @@ export default function StackNavigation({
             );
           }}
         >
-          <ReportHeader onHome={() => onNavigate('Home')} />
+          <ReportHeader onHome={() => onNavigate('Home')} language={language} />
         </View>
       ) : null}
       {screen !== 'Report' ? (
         <ScreenHeader
           {...titleCopy}
           showCitizenTag={screen === 'Home'}
+          language={language}
           onNotifications={() => onNavigate('Notifications')}
           onProfile={() => onNavigate('Profile')}
         />
@@ -174,14 +211,19 @@ export default function StackNavigation({
           }}
         >
           <View style={styles.homePinnedContent}>
-            <HomeQuickCard onOpenReport={onOpenReport} />
+            <HomeQuickCard onOpenReport={onOpenReport} darkMode={darkMode} language={language} />
+            <HomeSummary issues={issues} darkMode={darkMode} language={language} />
           </View>
         </View>
       ) : null}
       <ScrollView
         style={[
           styles.scrollView,
+          darkMode && styles.scrollViewDark,
           screen === 'My reports' ? styles.reportsScroll : null,
+          screen === 'My reports' && darkMode ? styles.reportsScrollDark : null,
+          screen === 'Report' ? styles.reportScroll : null,
+          screen === 'Report' && darkMode ? styles.reportScrollDark : null,
           screen === 'Home' ? { top: 130 + homeTopHeight } : null,
           screen === 'My reports' ? { top: 130 + myReportsHeaderHeight } : null,
           screen === 'Report' ? { top: reportHeaderHeight } : null,
